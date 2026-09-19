@@ -1,112 +1,66 @@
-# Manara Project --- AWS Cloud-Native CI/CD Tasks API
+<div align="center">
 
-A production-inspired cloud deployment project that demonstrates how to
-build, containerize, deploy, and operate a FastAPI application using AWS
-managed services.
+# Manara Project
 
-The project implements an automated CI/CD workflow:
+### AWS Cloud-Native CI/CD — Containerized Tasks API
 
-``` text
-GitHub
-   ↓
-AWS CodePipeline
-   ↓
-AWS CodeBuild
-   ↓
-Amazon ECR
-   ↓
-Amazon ECS Fargate
-   ↓
-Application Load Balancer
-   ↓
-FastAPI Application
-```
+A FastAPI application built, containerized, and deployed on AWS using a fully automated CI/CD pipeline, with infrastructure defined as code.
 
-The application uses Amazon RDS for persistent PostgreSQL data, Amazon
-CloudWatch for operational logs, Amazon S3 for log-file storage, and AWS
-Secrets Manager for database credentials.
+![AWS](https://img.shields.io/badge/AWS-Cloud-FF9900?logo=amazonaws&logoColor=white)
+![ECS](https://img.shields.io/badge/ECS-Fargate-FF9900?logo=amazonecs&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white)
+![CloudFormation](https://img.shields.io/badge/IaC-CloudFormation-FF4F8B?logo=amazonaws&logoColor=white)
 
-------------------------------------------------------------------------
+</div>
+
+---
 
 ## Table of Contents
 
--   [Project Overview](#project-overview)
--   [Project Goals](#project-goals)
--   [Architecture](#architecture)
--   [AWS Services and Why They Are
-    Used](#aws-services-and-why-they-are-used)
--   [Application Features](#application-features)
--   [Repository Structure](#repository-structure)
--   [CI/CD Workflow](#cicd-workflow)
--   [Networking and Security](#networking-and-security)
--   [Infrastructure as Code](#infrastructure-as-code)
--   [Configuration](#configuration)
--   [Deployment Overview](#deployment-overview)
--   [API Endpoints](#api-endpoints)
--   [Observability and Logging](#observability-and-logging)
--   [Cost Considerations](#cost-considerations)
--   [Security Considerations](#security-considerations)
--   [Limitations and Future
-    Improvements](#limitations-and-future-improvements)
--   [Cleanup](#cleanup)
--   [Learning Outcomes](#learning-outcomes)
+- [Overview](#overview)
+- [Architecture](#architecture)
+- [Tech Stack](#tech-stack)
+- [Repository Structure](#repository-structure)
+- [CI/CD Workflow](#cicd-workflow)
+- [Infrastructure as Code](#infrastructure-as-code)
+- [Networking and Security](#networking-and-security)
+- [API Reference](#api-reference)
+- [Configuration](#configuration)
+- [Deployment](#deployment)
+- [Screenshots](#screenshots)
+- [Observability](#observability)
+- [Cost Considerations](#cost-considerations)
+- [Known Limitations and Roadmap](#known-limitations-and-roadmap)
+- [Cleanup](#cleanup)
+- [Author](#author)
 
-------------------------------------------------------------------------
+---
 
-## Project Overview
+## Overview
 
-**Manara Project** is a containerized Tasks API built with **FastAPI**
-and deployed on **Amazon ECS Fargate**.
+**Manara Project** is a containerized REST API (FastAPI) deployed on **Amazon ECS Fargate** behind an **Application Load Balancer**. Container images are built by **AWS CodeBuild**, stored in **Amazon ECR**, and orchestrated through **AWS CodePipeline** connected to GitHub.
 
-The project is designed to demonstrate practical DevOps and cloud
-engineering concepts, including:
+The project demonstrates practical cloud and DevOps skills:
 
--   Containerization with Docker
--   Continuous integration and continuous delivery
--   AWS infrastructure provisioning with CloudFormation
--   Load balancing
--   Serverless container orchestration
--   PostgreSQL database integration
--   IAM roles and least-privilege permissions
--   Centralized application logging
--   Secret management
--   VPC networking and security groups
+- Containerization with Docker
+- AWS-native CI/CD (CodePipeline and CodeBuild)
+- Serverless container hosting with ECS Fargate
+- Infrastructure as Code with CloudFormation
+- Load balancing and health checks
+- Relational persistence with Amazon RDS (PostgreSQL)
+- Secret management with AWS Secrets Manager
+- Application logging to CloudWatch Logs and Amazon S3
+- VPC design, security groups, and IAM roles
 
-The project uses AWS-native CI/CD services rather than GitHub Actions.
-
-------------------------------------------------------------------------
-
-## Project Goals
-
-The main goals of this project are to:
-
-1.  Build a simple REST API using FastAPI.
-2.  Package the application as a Docker image.
-3.  Store and version container images in Amazon ECR.
-4.  Automatically build and deploy new application versions through AWS
-    CodePipeline.
-5.  Run the application on ECS Fargate without managing EC2 servers.
-6.  Store application data in Amazon RDS PostgreSQL.
-7.  Expose the application through an Application Load Balancer.
-8.  Send runtime logs to Amazon CloudWatch Logs.
-9.  Store application log files in Amazon S3.
-10. Manage database credentials using AWS Secrets Manager.
-11. Define the AWS infrastructure as code using AWS CloudFormation.
-
-------------------------------------------------------------------------
+---
 
 ## Architecture
 
-### Solution Architecture Diagram
+![Solution Architecture](./solution%20architecture%20diagram.jpeg)
 
-![Manara Project AWS Solution Architecture](./solution%20architecture%20diagram.jpeg)
-
-The diagram illustrates the complete AWS architecture, including the CI/CD pipeline, container deployment, networking, database connectivity, logging, secrets management, and IAM permissions.
-
-
-### High-Level Architecture
-
-``` text
+```text
 Developer
    │
    ▼
@@ -116,865 +70,364 @@ GitHub Repository
 AWS CodePipeline
    │
    ▼
-AWS CodeBuild
-   │
-   ├── Build Docker image
-   ├── Authenticate with Amazon ECR
-   └── Push image to ECR
-           │
-           ▼
-      Amazon ECR
-           │
-           ▼
-      Amazon ECS Fargate
-           │
-           ▼
-Application Load Balancer
-           │
-           ▼
-      FastAPI API
-           │
-     ┌─────┼───────────────┬────────────────┐
-     ▼     ▼               ▼                ▼
-   RDS  CloudWatch         S3         Secrets Manager
-PostgreSQL  Logs       Log Storage    DB Credentials
+AWS CodeBuild ──► Build Docker image ──► Push to Amazon ECR
+                                              │
+                                              ▼
+                                     Amazon ECS Fargate
+                                              │
+                                              ▼
+                                 Application Load Balancer
+                                              │
+                                              ▼
+                                       FastAPI Service
+                                              │
+                    ┌─────────────┬───────────┴──────────┬──────────────┐
+                    ▼             ▼                      ▼              ▼
+             RDS PostgreSQL  CloudWatch Logs      Amazon S3      Secrets Manager
+             (private)       (container logs)   (log archive)    (DB credentials)
 ```
 
 ### Network Layout
 
-The AWS environment is organized inside an Amazon VPC:
+| Layer | Resources |
+|-------|-----------|
+| Public subnets | Application Load Balancer, ECS Fargate tasks |
+| Private subnets | Amazon RDS PostgreSQL |
+| VPC Endpoint | S3 Gateway Endpoint (private S3 access, no NAT Gateway) |
+
+> ECS tasks run in public subnets in this training design to avoid NAT Gateway costs. Production workloads should use private subnets with VPC endpoints.
+
+---
+
+## Tech Stack
+
+| Category | Technology |
+|----------|------------|
+| Application | Python, FastAPI, SQLAlchemy |
+| Container | Docker |
+| Compute | Amazon ECS on AWS Fargate |
+| Registry | Amazon ECR |
+| Load Balancing | Application Load Balancer |
+| Database | Amazon RDS for PostgreSQL |
+| CI/CD | GitHub, AWS CodePipeline, AWS CodeBuild |
+| IaC | AWS CloudFormation |
+| Secrets | AWS Secrets Manager |
+| Logging | Amazon CloudWatch Logs, Amazon S3 |
+| Networking | Amazon VPC, Security Groups, S3 Gateway Endpoint |
+| Access Control | AWS IAM |
+
+---
+
+## Repository Structure
+
+```text
+manara-project/
+├── app/
+│   ├── main.py               # API routes and application entry point
+│   ├── db.py                 # Database connection and models
+│   ├── s3_logger.py          # Log handler that uploads logs to S3
+│   ├── requirements.txt      # Python dependencies
+│   └── Dockerfile            # Container image definition
+│
+├── infra/
+│   ├── 01-network.yaml       # VPC, subnets, routing, endpoints, security groups
+│   ├── 02-storage-db.yaml    # S3 log bucket, RDS PostgreSQL, DB secret
+│   ├── 03-ecr-ecs-alb.yaml   # ECR, ECS cluster/service, ALB, IAM roles
+│   └── 04-pipeline.yaml      # CodePipeline, CodeBuild, artifact bucket
+│
+├── scripts/
+│   └── deploy.sh             # Ordered stack deployment helper
+│
+├── screenshots/              # Documentation images
+├── buildspec.yml             # CodeBuild build instructions
+├── solution architecture diagram.jpeg
+├── .gitignore
+└── README.md
+```
+
+---
+
+## CI/CD Workflow
+
+A push to the `main` branch triggers the pipeline:
+
+1. **Source:** CodePipeline retrieves the commit from GitHub through a CodeConnections integration.
+2. **Build:** CodeBuild executes `buildspec.yml`:
+   - Authenticates with Amazon ECR
+   - Builds the Docker image from `app/Dockerfile`
+   - Pushes the image to the `manara/task-api` repository
+   - Generates `imagedefinitions.json`
+3. **Deploy:** ECS pulls the image from ECR and runs it as a Fargate task behind the ALB. ALB health checks determine whether the task receives traffic.
+
+> **Current state:** the pipeline implements the Source and Build stages. The ECS deployment step is performed by updating the ECS service. Adding an automated ECS Deploy stage is on the roadmap.
+
+---
+
+## Infrastructure as Code
+
+The infrastructure is split into four CloudFormation stacks, deployed in dependency order:
+
+| Stack | Responsibility |
+|-------|----------------|
+| `01-network.yaml` | VPC, public and private subnets, Internet Gateway, route tables, S3 Gateway Endpoint, security groups |
+| `02-storage-db.yaml` | S3 log bucket, RDS subnet group, RDS PostgreSQL instance, managed database secret |
+| `03-ecr-ecs-alb.yaml` | ECR repository, ECS cluster and service, task definition, ALB, target group, listener, IAM roles, CloudWatch log group |
+| `04-pipeline.yaml` | Artifact bucket, CodeBuild project, CodePipeline, IAM roles |
 
--   **Public subnets**
-    -   Application Load Balancer
-    -   ECS Fargate service for the training deployment design
--   **Private subnets**
-    -   Amazon RDS PostgreSQL database
--   **VPC Endpoint**
-    -   S3 Gateway VPC Endpoint to allow private S3 access without
-        requiring a NAT Gateway
+Splitting the stacks lets each layer be updated independently and shares values through CloudFormation exports.
+
+---
 
-> The ECS service may use public IP addressing in the training
-> configuration to reduce infrastructure complexity and avoid NAT
-> Gateway costs. For a production deployment, ECS tasks should generally
-> run in private subnets with appropriate VPC endpoints and/or
-> controlled outbound connectivity.
+## Networking and Security
 
-------------------------------------------------------------------------
+```text
+Internet ──► ALB (80) ──► ECS Fargate (app port) ──► RDS PostgreSQL (5432, private)
+```
 
-## AWS Services and Why They Are Used
+**Security group rules**
 
-### 1. GitHub
+| Source | Destination | Port | Purpose |
+|--------|-------------|------|---------|
+| Internet | ALB | 80 | Public HTTP traffic |
+| ALB security group | ECS security group | Application port | Forward requests to the API |
+| ECS security group | RDS security group | 5432 | Database connections |
 
-**Purpose:** Source code management and version control.
+**Security principles**
 
-GitHub stores the application source code, Docker configuration,
-CloudFormation templates, and CI/CD configuration.
+- RDS is not publicly accessible and only accepts traffic from the ECS security group.
+- Database credentials are stored in AWS Secrets Manager and injected at runtime.
+- IAM roles grant AWS access to services; no access keys are stored in code or images.
+- No secrets are committed to the repository.
 
-**Why GitHub?**
+---
 
--   Provides Git-based version control.
--   Supports collaboration and code review.
--   Acts as the source provider for AWS CodePipeline.
--   Keeps application and infrastructure code in one repository.
+## API Reference
 
-------------------------------------------------------------------------
+Interactive documentation is available at `/docs` (Swagger UI).
 
-### 2. AWS CodePipeline
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/` | Basic application message |
+| `GET` | `/health` | Liveness check (used by the ALB) |
+| `GET` | `/health/db` | Database connectivity check |
+| `GET` | `/tasks` | List all tasks |
+| `POST` | `/tasks` | Create a task |
+| `PUT` | `/tasks/{task_id}/done` | Mark a task as completed |
 
-**Purpose:** Automates the CI/CD workflow.
+**Create a task**
 
-CodePipeline coordinates the deployment stages after a code change is
-pushed to GitHub.
+```bash
+curl -X POST "http://<ALB-DNS-NAME>/tasks" \
+  -H "Content-Type: application/json" \
+  -d '{"title": "Complete AWS deployment"}'
+```
 
-**Why CodePipeline?**
+**List tasks**
 
--   Connects source, build, and deployment stages.
--   Reduces manual deployment steps.
--   Provides a visible pipeline execution history.
--   Integrates directly with CodeBuild, ECR, and ECS.
--   Helps ensure that every approved code change follows the same
-    process.
+```bash
+curl "http://<ALB-DNS-NAME>/tasks"
+```
 
-------------------------------------------------------------------------
+---
 
-### 3. AWS CodeBuild
+## Configuration
 
-**Purpose:** Builds the Docker image and prepares deployment artifacts.
+The application reads its configuration from environment variables:
 
-CodeBuild executes the commands defined in `buildspec.yml`.
+| Variable | Description | Source |
+|----------|-------------|--------|
+| `DB_HOST` | RDS endpoint | ECS task definition |
+| `DB_PORT` | Database port (default `5432`) | ECS task definition |
+| `DB_NAME` | Database name | ECS task definition |
+| `DB_USER` | Database username | ECS task definition |
+| `DB_PASSWORD` | Database password | AWS Secrets Manager |
+| `LOG_BUCKET` | S3 bucket for log files | ECS task definition |
+| `AWS_DEFAULT_REGION` | AWS region | ECS task definition |
 
-Typical operations include:
+Sensitive values such as `DB_PASSWORD` must be injected through Secrets Manager and never committed to Git.
 
-1.  Authenticate with Amazon ECR.
-2.  Build the Docker image.
-3.  Tag the image using the commit identifier.
-4.  Push the image to ECR.
-5.  Generate `imagedefinitions.json` for ECS deployment.
+---
 
-**Why CodeBuild?**
+## Deployment
 
--   Fully managed build service.
--   No build server needs to be maintained.
--   Integrates with IAM, ECR, CloudWatch, and CodePipeline.
--   Supports repeatable and automated builds.
+Deploy in dependency order:
 
-------------------------------------------------------------------------
+```bash
+# 1. Network
+aws cloudformation deploy --template-file infra/01-network.yaml \
+  --stack-name manara-network --capabilities CAPABILITY_NAMED_IAM
 
-### 4. Amazon ECR
+# 2. Storage and database
+aws cloudformation deploy --template-file infra/02-storage-db.yaml \
+  --stack-name manara-storage-db --capabilities CAPABILITY_NAMED_IAM
 
-**Purpose:** Stores Docker images for the application.
+# 3. ECR, ECS, and ALB
+aws cloudformation deploy --template-file infra/03-ecr-ecs-alb.yaml \
+  --stack-name manara-app --capabilities CAPABILITY_NAMED_IAM
 
-ECR contains the container images built by CodeBuild. ECS retrieves the
-required image from ECR during deployment.
+# 4. CI/CD pipeline
+aws cloudformation deploy --template-file infra/04-pipeline.yaml \
+  --stack-name manara-pipeline --capabilities CAPABILITY_NAMED_IAM
+```
 
-**Why ECR?**
+Or use the helper script:
 
--   Native integration with ECS.
--   Secure, private container image storage.
--   Supports image tagging and lifecycle policies.
--   Eliminates the need to operate a separate container registry.
+```bash
+./scripts/deploy.sh
+```
 
-------------------------------------------------------------------------
+After deployment:
 
-### 5. Amazon ECS with AWS Fargate
+1. Push a commit to `main` to trigger the pipeline.
+2. Confirm the ECS service reaches a steady state.
+3. Confirm the ALB target group reports a healthy target.
+4. Open `http://<ALB-DNS-NAME>/docs` to test the API.
 
-**Purpose:** Runs the FastAPI application container.
-
-ECS manages the service and task lifecycle, while Fargate provides
-serverless compute for running containers.
-
-**Why ECS Fargate?**
-
--   No EC2 instances to provision or patch.
--   AWS manages the underlying container infrastructure.
--   Supports service deployments and task replacement.
--   Integrates with ALB, IAM, CloudWatch Logs, and ECR.
--   Suitable for running containerized APIs.
-
-------------------------------------------------------------------------
-
-### 6. Application Load Balancer
-
-**Purpose:** Receives client HTTP requests and forwards them to the ECS
-service.
-
-The ALB exposes the application through a stable entry point and
-performs health checks against the FastAPI container.
-
-**Why ALB?**
-
--   Provides a single access point for users.
--   Distributes traffic to healthy ECS tasks.
--   Supports target-group health checks.
--   Makes it easier to add multiple application tasks later.
--   Separates public traffic handling from the application container.
-
-------------------------------------------------------------------------
-
-### 7. Amazon RDS for PostgreSQL
-
-**Purpose:** Provides persistent relational database storage.
-
-The FastAPI application uses PostgreSQL to store task data instead of
-relying on in-memory Python lists.
-
-**Why RDS PostgreSQL?**
-
--   Managed database service.
--   AWS handles common operational tasks such as backups and
-    infrastructure maintenance.
--   PostgreSQL is a mature relational database.
--   Supports structured data, transactions, and SQL queries.
--   Keeps application data available beyond the lifecycle of an ECS
-    task.
-
-The database is placed in private subnets and is not intended to be
-publicly accessible.
-
-------------------------------------------------------------------------
-
-### 8. Amazon CloudWatch Logs
-
-**Purpose:** Collects and centralizes container and application logs.
-
-ECS sends container stdout and stderr output to CloudWatch Logs using
-the `awslogs` log driver.
-
-**Why CloudWatch Logs?**
-
--   Centralized logging for ECS tasks.
--   Useful for troubleshooting deployment and runtime problems.
--   Supports log streams for individual containers.
--   Integrates with AWS monitoring and alerting capabilities.
--   Removes the need to log only to the container's local filesystem.
-
-------------------------------------------------------------------------
-
-### 9. Amazon S3
-
-**Purpose:** Stores application log files and archived log data.
-
-The application can upload buffered log content to an S3 bucket for
-longer-term storage or later analysis.
-
-**Why S3?**
-
--   Durable object storage.
--   Suitable for log archives and exported files.
--   Scales without managing storage servers.
--   Supports lifecycle rules for retention and cost control.
--   Can be accessed privately through an S3 Gateway VPC Endpoint.
-
-CloudWatch is used for operational log visibility, while S3 is used for
-file-based log storage.
-
-------------------------------------------------------------------------
-
-### 10. AWS Secrets Manager
-
-**Purpose:** Stores and provides sensitive database credentials.
-
-Database passwords should not be hard-coded in the source code, Docker
-image, or GitHub repository.
-
-**Why Secrets Manager?**
-
--   Separates secrets from application code.
--   Allows ECS tasks to retrieve secrets at runtime.
--   Supports controlled access through IAM.
--   Reduces the risk of exposing credentials in source control.
--   Supports secret rotation workflows.
-
-------------------------------------------------------------------------
-
-### 11. AWS IAM
-
-**Purpose:** Controls access between AWS services and resources.
-
-IAM roles are used for services such as:
-
--   CodePipeline
--   CodeBuild
--   ECS task execution
--   ECS application tasks
-
-**Why IAM?**
-
--   Enforces authentication and authorization.
--   Allows permissions to be assigned to AWS services.
--   Supports least-privilege access.
--   Avoids storing long-term AWS access keys inside containers or source
-    code.
-
-------------------------------------------------------------------------
-
-### 12. Amazon VPC
-
-**Purpose:** Provides an isolated virtual network for the application
-infrastructure.
-
-The VPC contains the subnets, route tables, security groups, and
-endpoints used by the application.
-
-**Why VPC?**
-
--   Controls network boundaries.
--   Separates public-facing resources from the database.
--   Enables security-group-based traffic filtering.
--   Provides a foundation for private communication between AWS
-    resources.
-
-------------------------------------------------------------------------
-
-### 13. Security Groups
-
-**Purpose:** Control inbound and outbound network traffic.
-
-The design uses separate security groups for the ALB, ECS tasks, and RDS
-database.
-
-Expected traffic rules:
-
-  ------------------------------------------------------------------------
-  Source           Destination                       Port Purpose
-  ---------------- ---------------- --------------------- ----------------
-  Internet users   ALB                                 80 Public HTTP
-                                                          requests
-
-  ALB security     ECS security                      8000 Forward API
-  group            group                                  traffic
-
-  ECS security     RDS security                      5432 PostgreSQL
-  group            group                                  connection
-  ------------------------------------------------------------------------
-
-The database security group should not allow PostgreSQL access from the
-entire internet.
-
-------------------------------------------------------------------------
-
-### 14. AWS CloudFormation
-
-**Purpose:** Defines and provisions infrastructure as code.
-
-The infrastructure is divided into CloudFormation templates so that
-networking, storage/database resources, ECS resources, and CI/CD
-resources can be managed separately.
-
-**Why CloudFormation?**
-
--   Makes infrastructure repeatable.
--   Keeps infrastructure configuration in Git.
--   Reduces manual configuration errors.
--   Supports stack outputs and cross-stack references.
--   Makes updates and cleanup easier to manage.
-
-------------------------------------------------------------------------
+> Review parameters, IAM permissions, and expected costs before deploying to a live AWS account.
 
 ---
 
 ## Screenshots
 
-The following screenshots document the deployed AWS resources and the running application. Store all images inside the `screenshots/` directory using the filenames below.
+### Application
 
-> Add screenshots as the deployment progresses. The README references are prepared in advance so the documentation can be completed consistently.
+**Swagger UI:** interactive API documentation served through the load balancer.
 
-### 1. GitHub Repository
+![Swagger UI](./screenshots/01-swagger-ui.png)
 
-![GitHub Repository](./screenshots/01-github-repository.png)
+### Load Balancing
 
-Shows the repository structure, source code, infrastructure templates, and CI/CD configuration.
+**Application Load Balancer:** internet-facing ALB spanning two Availability Zones.
 
-### 2. AWS CodePipeline
+![Application Load Balancer](./screenshots/02-alb.png)
 
-![AWS CodePipeline](./screenshots/02-codepipeline-success.png)
+**Target Group:** routes traffic to ECS tasks by IP.
 
-Shows a successful pipeline execution from source retrieval through build and deployment.
+![Target Group](./screenshots/03-target-group.png)
 
-### 3. AWS CodeBuild
+### Networking
 
-![AWS CodeBuild](./screenshots/03-codebuild-success.png)
+**VPC:** dedicated VPC (`10.0.0.0/16`) hosting all resources.
 
-Shows a successful build, including Docker image creation and pushing the image to Amazon ECR.
+![VPC](./screenshots/04-vpc.png)
 
-### 4. Amazon ECR
+### Compute (ECS Fargate)
 
-![Amazon ECR](./screenshots/04-ecr-images.png)
+**Cluster tasks:** Fargate task running in the cluster.
 
-Shows the ECR repository and the Docker image tags generated by the pipeline.
+![ECS Tasks](./screenshots/05-ecs-tasks.png)
 
-### 5. Amazon ECS Cluster and Service
+**Service:** ECS service with the desired task count.
 
-![Amazon ECS Service](./screenshots/05-ecs-service-running.png)
+![ECS Service](./screenshots/06-ecs-service.png)
 
-Shows the ECS cluster, running service, desired task count, and deployment status.
+**Task definition:** 0.25 vCPU, 512 MiB memory, `awsvpc` network mode.
 
-### 6. ECS Task Definition
+![Task Definition](./screenshots/07-ecs-task-definition.png)
 
-![ECS Task Definition](./screenshots/06-ecs-task-definition.png)
+### Container Registry
 
-Shows the task definition configuration, including CPU, memory, container port, IAM roles, and logging configuration.
+**Repository:** ECR repository `manara/task-api`.
 
-### 7. Application Load Balancer
+![ECR Repository](./screenshots/09-ecr-repository.png)
 
-![Application Load Balancer](./screenshots/07-alb-target-group-healthy.png)
+**Image details:** image pushed by the build process.
 
-Shows the Application Load Balancer, listener configuration, target group, and healthy ECS target.
+![ECR Image Details](./screenshots/08-ecr-image-details.png)
 
-### 8. Running FastAPI Application
+### CI/CD
 
-![Running FastAPI Application](./screenshots/08-fastapi-running.png)
+**Pipeline:** Source and Build stages completed successfully.
 
-Shows the application running through the Application Load Balancer DNS name.
+![CodePipeline](./screenshots/10-codepipeline.png)
 
-### 9. FastAPI Swagger Documentation
+**Build:** CodeBuild project with a successful build.
 
-![FastAPI Swagger Documentation](./screenshots/09-fastapi-swagger.png)
+![CodeBuild](./screenshots/11-codebuild.png)
 
-Shows the interactive FastAPI Swagger UI and the available API endpoints.
+**Source repository:** project structure on GitHub.
 
-### 10. API Request and Response
+![GitHub Repository](./screenshots/12-github-repository.png)
 
-![API Request and Response](./screenshots/10-api-request-response.png)
+---
 
-Shows an example request and response, such as creating a task or retrieving the task list.
+## Observability
 
-### 11. Amazon RDS
+| Path | Purpose |
+|------|---------|
+| **CloudWatch Logs** | Container stdout/stderr through the `awslogs` driver, used for troubleshooting and deployment investigation |
+| **Amazon S3** | Buffered application log files for archival and later analysis |
 
-![Amazon RDS](./screenshots/11-rds-instance-available.png)
+The S3 logging implementation is intended for learning and demonstration. Production systems should consider managed log-delivery pipelines and lifecycle policies.
 
-Shows the RDS PostgreSQL instance, its availability status, and the relevant connectivity configuration.
-
-### 12. RDS Connectivity Test
-
-![RDS Connectivity Test](./screenshots/12-database-health-check.png)
-
-Shows a successful database health check through the API endpoint.
-
-### 13. Amazon CloudWatch Logs
-
-![Amazon CloudWatch Logs](./screenshots/13-cloudwatch-logs.png)
-
-Shows application and container logs received by CloudWatch Logs.
-
-### 14. Amazon S3 Log Bucket
-
-![Amazon S3 Log Bucket](./screenshots/14-s3-log-bucket.png)
-
-Shows the S3 bucket and the uploaded application log files.
-
-### 15. AWS Secrets Manager
-
-![AWS Secrets Manager](./screenshots/15-secrets-manager.png)
-
-Shows the database secret configuration without exposing the secret value.
-
-### 16. VPC and Subnets
-
-![VPC and Subnets](./screenshots/16-vpc-subnets.png)
-
-Shows the VPC, public subnets, private subnets, and Availability Zone distribution.
-
-### 17. Security Groups
-
-![Security Groups](./screenshots/17-security-groups.png)
-
-Shows the security-group rules for the ALB, ECS service, and RDS database.
-
-### 18. CloudFormation Stacks
-
-![CloudFormation Stacks](./screenshots/18-cloudformation-stacks.png)
-
-Shows the successfully deployed CloudFormation stacks and their statuses.
-
-### 19. IAM Roles
-
-![IAM Roles](./screenshots/19-iam-roles.png)
-
-Shows the IAM roles used by CodePipeline, CodeBuild, ECS task execution, and the ECS application task.
-
-### 20. End-to-End Deployment Result
-
-![End-to-End Deployment Result](./screenshots/20-end-to-end-result.png)
-
-Shows the final successful state of the project: a running FastAPI application deployed through the AWS CI/CD pipeline and connected to RDS.
-
-
-## Application Features
-
-The FastAPI application provides task-management endpoints such as:
-
--   Health check
--   Database health check
--   List tasks
--   Create a task
--   Mark a task as completed
-
-The application is designed to demonstrate API deployment rather than
-provide a complete production task-management platform.
-
-------------------------------------------------------------------------
-
-## Repository Structure
-
-``` text
-manara-project/
-├── app/
-│   ├── main.py
-│   ├── db.py
-│   ├── s3_logger.py
-│   ├── requirements.txt
-│   └── Dockerfile
-│
-├── infra/
-│   ├── 01-network.yaml
-│   ├── 02-storage-db.yaml
-│   ├── 03-ecr-ecs-alb.yaml
-│   └── 04-pipeline.yaml
-│
-├── scripts/
-│   └── deploy.sh
-│
-├── buildspec.yml
-├── .gitignore
-└── README.md
-```
-
-### Directory Responsibilities
-
-  -----------------------------------------------------------------------
-  Directory/File                      Responsibility
-  ----------------------------------- -----------------------------------
-  `app/`                              FastAPI application and Docker
-                                      configuration
-
-  `main.py`                           API routes and application entry
-                                      point
-
-  `db.py`                             Database connection and persistence
-                                      logic
-
-  `s3_logger.py`                      Application log handling and S3
-                                      integration
-
-  `requirements.txt`                  Python dependencies
-
-  `Dockerfile`                        Builds the application container
-                                      image
-
-  `infra/`                            AWS CloudFormation templates
-
-  `scripts/`                          Deployment helper scripts
-
-  `buildspec.yml`                     CodeBuild build and
-                                      image-publishing instructions
-
-  `.gitignore`                        Prevents unnecessary or sensitive
-                                      files from being committed
-  -----------------------------------------------------------------------
-
-------------------------------------------------------------------------
-
-## CI/CD Workflow
-
-When a developer pushes a change to the `main` branch:
-
-1.  **GitHub** stores the new commit.
-2.  **CodePipeline** detects the change.
-3.  **CodeBuild** starts the build process.
-4.  CodeBuild builds the Docker image from `app/Dockerfile`.
-5.  CodeBuild authenticates with **Amazon ECR**.
-6.  The image is tagged and pushed to ECR.
-7.  CodeBuild generates `imagedefinitions.json`.
-8.  CodePipeline deploys the new image to **ECS Fargate**.
-9.  ECS starts a new task revision.
-10. The ALB checks the application health endpoint.
-11. Traffic is sent to healthy ECS tasks.
-
-A commit-based image tag is preferred over relying only on the `latest`
-tag because it provides better traceability between a running deployment
-and its source code.
-
-------------------------------------------------------------------------
-
-## Networking and Security
-
-The project follows a basic layered network design:
-
-``` text
-Internet
-   │
-   ▼
-Application Load Balancer
-   │
-   ▼
-ECS Fargate
-   │
-   ▼
-Private RDS PostgreSQL
-```
-
-### Security Principles
-
--   RDS is not publicly accessible.
--   ECS accepts application traffic from the ALB security group.
--   RDS accepts database traffic from the ECS security group.
--   Database credentials are stored in Secrets Manager.
--   AWS service permissions are provided through IAM roles.
--   The source repository must not contain passwords, access keys, or
-    other secrets.
--   Security groups should allow only the required ports and sources.
-
-------------------------------------------------------------------------
-
-## Infrastructure as Code
-
-The CloudFormation templates are organized by responsibility.
-
-### `01-network.yaml`
-
-Creates foundational networking resources, such as:
-
--   VPC
--   Public and private subnets
--   Internet Gateway
--   Route tables
--   S3 Gateway VPC Endpoint
--   Security groups
-
-### `02-storage-db.yaml`
-
-Creates data and storage resources, such as:
-
--   S3 bucket for application logs
--   RDS subnet group
--   RDS PostgreSQL instance
--   Database secret
--   CloudFormation exports
-
-### `03-ecr-ecs-alb.yaml`
-
-Creates application hosting resources, such as:
-
--   ECR repository
--   ECS cluster
--   IAM roles
--   CloudWatch log group
--   ECS task definition
--   Application Load Balancer
--   Target group
--   Listener
--   ECS service
-
-### `04-pipeline.yaml`
-
-Creates CI/CD resources, such as:
-
--   Artifact S3 bucket
--   CodeBuild project
--   CodeBuild IAM role
--   CodePipeline
--   CodePipeline IAM role
--   GitHub CodeConnections integration
-
-------------------------------------------------------------------------
-
-## Configuration
-
-The application requires configuration values for database connectivity
-and logging.
-
-Typical configuration values include:
-
-``` text
-DB_HOST
-DB_PORT
-DB_NAME
-DB_USER
-DB_PASSWORD
-S3_LOG_BUCKET
-AWS_REGION
-```
-
-Sensitive values, especially `DB_PASSWORD`, should be supplied through
-AWS Secrets Manager or ECS secret injection rather than committed to
-GitHub.
-
-The exact environment-variable names must match the names expected by
-the application code and ECS task definition.
-
-------------------------------------------------------------------------
-
-## Deployment Overview
-
-The deployment should be performed in dependency order:
-
-1.  Create the networking stack.
-2.  Create the storage and database stack.
-3.  Create the ECR repository and application infrastructure.
-4.  Build and push the initial Docker image.
-5.  Configure and deploy the CI/CD pipeline.
-6.  Trigger a pipeline execution.
-7.  Verify the ECS service and ALB health.
-8.  Test the API endpoints.
-9.  Review CloudWatch Logs and RDS connectivity.
-
-> Before deploying to a live AWS account, review all CloudFormation
-> parameters, IAM permissions, security-group rules, database settings,
-> and expected costs.
-
-------------------------------------------------------------------------
-
-## API Endpoints
-
-The application exposes endpoints similar to the following:
-
-  Method   Endpoint                  Description
-  -------- ------------------------- -------------------------------------
-  `GET`    `/`                       Returns a basic application message
-  `GET`    `/health`                 Checks application health
-  `GET`    `/health/db`              Checks database connectivity
-  `GET`    `/tasks`                  Returns the available tasks
-  `POST`   `/tasks`                  Creates a new task
-  `PUT`    `/tasks/{task_id}/done`   Marks a task as completed
-
-### Example: Create a Task
-
-``` bash
-curl -X POST "http://<ALB-DNS-NAME>/tasks" \
-  -H "Content-Type: application/json" \
-  -d '{"title":"Complete AWS deployment"}'
-```
-
-### Example: Retrieve Tasks
-
-``` bash
-curl "http://<ALB-DNS-NAME>/tasks"
-```
-
-Replace `<ALB-DNS-NAME>` with the DNS name of the deployed Application
-Load Balancer.
-
-------------------------------------------------------------------------
-
-## Observability and Logging
-
-The project uses two logging paths:
-
-### CloudWatch Logs
-
-Used for:
-
--   Real-time troubleshooting
--   ECS container logs
--   Application errors
--   Deployment investigation
--   Operational visibility
-
-### Amazon S3
-
-Used for:
-
--   Application log-file storage
--   Exported or archived log content
--   Longer-term object-based retention
-
-The S3 logging implementation is intended for learning and
-demonstration. A production system should consider a managed
-log-delivery architecture, buffering strategy, encryption, lifecycle
-policies, and failure handling.
-
-------------------------------------------------------------------------
+---
 
 ## Cost Considerations
 
-The project is designed with cost awareness in mind.
+Main cost drivers: Application Load Balancer, RDS, ECS Fargate runtime, CodeBuild minutes, S3, CloudWatch Logs, and ECR storage.
 
-Potential cost-generating resources include:
+Cost-control decisions in this project:
 
--   Application Load Balancer
--   Amazon RDS
--   ECS Fargate task runtime
--   CodeBuild build minutes
--   S3 storage and requests
--   CloudWatch Logs ingestion and retention
--   ECR image storage
+- No NAT Gateway (S3 Gateway Endpoint instead)
+- Small instance sizes (0.25 vCPU / 512 MiB tasks, micro database)
+- Single-AZ database and a single ECS task
+- ECR lifecycle policies and CloudWatch log retention limits
 
-Cost-control decisions may include:
+Delete resources when they are not in use. Check current AWS pricing for your region.
 
--   Using small training-sized resources.
--   Avoiding a NAT Gateway in the training design.
--   Using an S3 Gateway VPC Endpoint.
--   Applying ECR image lifecycle policies.
--   Configuring CloudWatch log retention.
--   Stopping or deleting resources when the project is not in use.
+---
 
-AWS pricing and service availability vary by region and configuration.
-Review the current AWS pricing pages before deployment.
+## Known Limitations and Roadmap
 
-------------------------------------------------------------------------
+**Current limitations**
 
-## Security Considerations
+- The pipeline covers Source and Build; ECS deployment is not yet an automated pipeline stage.
+- The task definition has no dedicated task role, so S3 log uploads need one to be granted.
+- ECS tasks run in public subnets (training configuration).
+- HTTP only, no TLS.
+- Image tagging uses an environment tag (`dev`) rather than commit-based tags.
 
-This project is educational and should be hardened before production
-use.
+**Roadmap**
 
-Recommended improvements include:
+- [ ] Add an ECS Deploy stage to CodePipeline
+- [ ] Attach a task role with least-privilege S3 access
+- [ ] Commit-hash image tagging for traceability
+- [ ] HTTPS with AWS Certificate Manager and HTTP-to-HTTPS redirect
+- [ ] Move ECS tasks to private subnets with VPC endpoints
+- [ ] Automated tests and security scanning in CodeBuild
+- [ ] Database migrations with Alembic
+- [ ] Auto scaling and CloudWatch alarms
+- [ ] Multi-AZ database for production
+- [ ] API authentication (Amazon Cognito)
 
--   Use HTTPS with an ACM certificate.
--   Redirect HTTP traffic to HTTPS.
--   Run ECS tasks in private subnets.
--   Use VPC endpoints where appropriate.
--   Apply least-privilege IAM policies.
--   Encrypt RDS and S3 data.
--   Enable database backups and deletion protection when appropriate.
--   Store secrets only in Secrets Manager.
--   Configure CloudWatch log retention.
--   Add monitoring and alerting.
--   Avoid exposing administrative endpoints publicly.
--   Add authentication and authorization to the API.
--   Use image scanning and dependency vulnerability checks.
-
-------------------------------------------------------------------------
-
-## Limitations and Future Improvements
-
-Possible future improvements include:
-
--   HTTPS support through AWS Certificate Manager.
--   Private ECS subnets with controlled outbound connectivity.
--   ECS service auto scaling.
--   Multi-AZ production database configuration.
--   RDS Proxy for connection management.
--   API authentication using Amazon Cognito or another identity
-    provider.
--   Automated tests in CodeBuild.
--   Static analysis and security scanning.
--   Blue/green or canary deployments.
--   CloudWatch alarms and notifications.
--   Centralized managed log delivery to S3.
--   Database migration management using Alembic.
--   API documentation and integration tests.
--   WAF protection for internet-facing workloads where required.
-
-------------------------------------------------------------------------
+---
 
 ## Cleanup
 
-To avoid unnecessary AWS charges, delete resources when the project is
-no longer needed.
+Delete stacks in reverse dependency order to avoid ongoing charges:
 
-Cleanup should be performed carefully and in dependency order:
+```bash
+aws cloudformation delete-stack --stack-name manara-pipeline
+aws cloudformation delete-stack --stack-name manara-app
+aws cloudformation delete-stack --stack-name manara-storage-db
+aws cloudformation delete-stack --stack-name manara-network
+```
 
-1.  Disable or remove the CI/CD pipeline.
-2.  Delete the ECS service and related application resources.
-3.  Delete the ECR repository after reviewing stored images.
-4.  Delete the RDS stack after confirming that required data is backed
-    up.
-5.  Empty the S3 buckets if CloudFormation requires it.
-6.  Delete the storage/database stack.
-7.  Delete the networking stack.
+Empty the S3 buckets first if CloudFormation cannot delete them, and delete the ECR images if needed. RDS and S3 data cannot be recovered after deletion, so verify backups first.
 
-**Important:** RDS and S3 may contain data that cannot be recovered
-after deletion. Always verify backups and retention requirements before
-cleanup.
-
-------------------------------------------------------------------------
-
-## Learning Outcomes
-
-By completing this project, the developer practices:
-
--   Designing a cloud architecture on AWS.
--   Building a REST API with FastAPI.
--   Creating Docker images.
--   Using Amazon ECR as a container registry.
--   Deploying containers with ECS Fargate.
--   Configuring an Application Load Balancer.
--   Connecting an application to RDS PostgreSQL.
--   Designing VPC subnets and security groups.
--   Managing secrets with AWS Secrets Manager.
--   Using IAM roles for AWS service access.
--   Implementing AWS-native CI/CD with CodePipeline and CodeBuild.
--   Managing infrastructure through CloudFormation.
--   Collecting and storing application logs.
--   Considering security, reliability, and cloud costs.
-
-------------------------------------------------------------------------
-
-## License
-
-This project is intended for educational and portfolio purposes. Add an
-appropriate license here if the repository will be distributed or reused
-publicly.
-
-------------------------------------------------------------------------
+---
 
 ## Author
 
 **Anas**
 
-GitHub: [Dev-Anas-10](https://github.com/Dev-Anas-10)
+- GitHub: [@Dev-Anas-10](https://github.com/Dev-Anas-10)
+- Repository: [manara-project](https://github.com/Dev-Anas-10/manara-project)
 
-Repository:
-[manara-project](https://github.com/Dev-Anas-10/manara-project)
+---
+
+<div align="center">
+
+Built for learning and portfolio purposes.
+
+</div>
